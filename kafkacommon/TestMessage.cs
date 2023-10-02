@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace kafkacommon
+﻿namespace kafkacommon
 {
 
 	public interface IEnvelope
 	{
+		Guid CorrelationId { get; }
 		string Identifier { get; }
 	}
 
 	public class TestMessage : IEnvelope
 	{
+		public Guid CorrelationId { get; }
 		public string Identifier => "TestMessage";
 		public string StringValue { get; set; }
 		public int IntValue { get; set; }

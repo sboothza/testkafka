@@ -28,7 +28,7 @@ namespace kafkacommon
 
 	public interface IPublisher
 	{
-		Task Publish<T>(string topic, T message);
+		Task PublishAsync<T>(string topic, T message);
 	}
 
 
@@ -44,7 +44,7 @@ namespace kafkacommon
 		}
 
 
-		public async Task Publish<T>(string topic, T message)
+		public async Task PublishAsync<T>(string topic, T message)
 		{
 			string jsonString = JsonSerializer.Serialize(message);
 

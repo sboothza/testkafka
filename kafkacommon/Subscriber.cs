@@ -5,7 +5,6 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-
 using Confluent.Kafka;
 
 namespace kafkacommon
@@ -62,9 +61,7 @@ namespace kafkacommon
 			_pollMilliseconds = pollMilliseconds;
 			var conf = new ConsumerConfig
 			{
-				GroupId = consumerGroup,
-				BootstrapServers = servers,
-				AutoOffsetReset = AutoOffsetReset.Earliest
+				GroupId = consumerGroup, BootstrapServers = servers, AutoOffsetReset = AutoOffsetReset.Earliest
 			};
 
 			_consumer = new ConsumerBuilder<Ignore, string>(conf).Build();
@@ -90,12 +87,19 @@ namespace kafkacommon
 					{
 						//Console.WriteLine($"Consumed message '{cr.Value}' at: '{cr.TopicPartitionOffset}'.");
 						JsonNode envelope = JsonNode.Parse(cr.Message.Value);
-						var identifier = envelope["Identifier"].ToString();
+						var identifier = "";
+						if (envelope["Identifier"] != null)
+							identifier = envelope["Identifier"].ToString();
+						else
+							identifier = envelope["identifier"].ToString();
 
 						var t = EnvelopeMapper.TypeFromIdentifier(identifier);
 						var msg = JsonSerializer.Deserialize(cr.Message.Value, t);
 						if (msg is not null)
-							OnMessageReceived(new MessageReceivedEventArgs { Message = msg });
+							OnMessageReceived(new MessageReceivedEventArgs
+							{
+								Message = msg
+							});
 
 					}
 
