@@ -19,6 +19,9 @@ public class UserRepository : Repository<User>, IUserRepository
     {
     }
 
+    public string CreateSql() =>
+        "CREATE TABLE users (id uuid NOT NULL, username varchar(50) NULL, name varchar(100) NULL, CONSTRAINT users_pk PRIMARY KEY (id));";
+
     public List<User> GetAll()
     {
         return GetMultiple("select * from users;", Array.Empty<DbParameter>());

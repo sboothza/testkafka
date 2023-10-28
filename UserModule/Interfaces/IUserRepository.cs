@@ -10,4 +10,5 @@ public interface IUserRepository : IRepository<User>
     void Add(Guid id, string username, string name);
     void Delete(Guid id);
     void Update(Guid id, string username, string name);
+    string CreateSql();
 }

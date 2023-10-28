@@ -39,7 +39,7 @@ public class TopicManager : IDisposable
 
 		_consumer = new ConsumerBuilder<Ignore, string>(conf).Build();
 		_consumer.Subscribe(topic);
-		_backgroundThread = new Thread(new ThreadStart(ThreadRun));
+		_backgroundThread = new Thread(ThreadRun);
 		_cts = new CancellationTokenSource();
 		var config = new ProducerConfig
 		{

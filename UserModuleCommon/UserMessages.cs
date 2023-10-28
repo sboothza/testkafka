@@ -76,12 +76,3 @@ public class BasicResponse : IEnvelope
 	}
 }
 
-// public class UserUpdateResponse : BasicResponse
-// {
-// 	public new string Identifier => "BasicResponse";
-// }
-//
-// public class UserDeleteResponse : BasicResponse
-// {
-// 	public new string Identifier => "UserDeleteResponse";
-// }

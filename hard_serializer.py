@@ -1,3 +1,4 @@
+import inspect
 import json
 import uuid
 from enum import Enum
@@ -28,14 +29,24 @@ class HardSerializer(json.JSONEncoder):
         if isinstance(obj, uuid.UUID):
             return str(obj)
 
+        if isinstance(obj, str):
+            return obj
+
         if isinstance(obj, Enum):
             return str(obj).replace("{}.".format(type(obj).__name__), "")
 
         if not isinstance(obj, dict):
-            if hasattr(obj, "__dict__"):
-                d = {k: v for (k, v) in obj.__dict__.items() if not k.startswith("_")}
-            else:
-                return obj
+            d = {}
+            # this is to handle base class members
+            for m in [
+                m
+                for m in inspect.getmembers(obj)
+                if not m[0].startswith("_")
+                and not inspect.ismethod(m[1])
+                and not inspect.isfunction(m[1])
+                and not inspect.isbuiltin(m[1])
+            ]:
+                d[m[0]] = m[1]
         else:
             d = obj
 
@@ -58,7 +69,13 @@ class HardSerializer(json.JSONEncoder):
             return new_list
 
         if cls == uuid.UUID:
-            return uuid.UUID(source_obj)
+            if isinstance(source_obj, uuid.UUID):
+                return source_obj
+            else:
+                return uuid.UUID(source_obj)
+
+        if cls == str:
+            return source_obj
 
         new_obj = cls()
         if hasattr(new_obj, "map_to_object"):

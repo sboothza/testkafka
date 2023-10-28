@@ -1,17 +1,36 @@
+import inspect
 import uuid
 
-from envelopes import UserRequest, UserResponse
+from envelopes import (
+    UserRequest,
+    UserResponse,
+    BasicResponse,
+    UserAddRequest,
+    UserUpdateRequest,
+    UserDeleteRequest,
+)
 from hard_serializer import HardSerializer
 from pubsub import PubSub
 
 
-def output_obj(obj):
+def handleUserResponse(pubsub, obj):
     print(obj)
 
 
+def handleBasicResponse(pubsub, obj):
+    print(obj)
+
+def handleEverythingElse(pubsub, obj):
+    print(obj)
+
 def main():
+
     serializer = HardSerializer()
-    pubsub = PubSub(serializer, ["test"], "python-cli", "localhost:9092", output_obj)
+
+    pubsub = PubSub(serializer, ["test"], "python-cli", "localhost:9092")
+    pubsub.bind(UserResponse, handleUserResponse)
+    pubsub.bind(BasicResponse, handleBasicResponse)
+    pubsub.bind(UserRequest, handleEverythingElse)
 
     done = False
     print("cli")
@@ -34,15 +53,22 @@ def main():
         elif words[0] == "get":
             req = UserRequest(uuid.UUID(words[1]))
             pubsub.publish("test", req)
+        elif words[0] == "add":
+            req = UserAddRequest(id=uuid.uuid4(), username=words[1], name=words[2])
+            pubsub.publish("test", req)
+        elif words[0] == "update":
+            req = UserUpdateRequest(id=uuid.UUID(words[1]), username=words[2], name=words[3])
+            pubsub.publish("test", req)
+        elif words[0] == "delete":
+            req = UserDeleteRequest(id=uuid.UUID(words[1]))
+            pubsub.publish("test", req)
         else:
             print("unknown command")
-
 
     print("done")
     pubsub.shutdown()
     pubsub.join(1000)
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

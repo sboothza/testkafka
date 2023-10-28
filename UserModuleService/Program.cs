@@ -76,11 +76,11 @@ namespace UserModuleService
 
 		static void Main(string[] args)
 		{
+			var servers = "localhost:9092";
+			Admin.CreateTopic(servers, "test");
 			EnvelopeMapper.Scan();
 			DbProviderFactories.RegisterFactory("Npgsql", NpgsqlFactory.Instance);
 			repo = new UserRepository("Npgsql", "Server=localhost;Port=5432;Database=users;User Id=postgres;Password=admin;");
-			var servers = "localhost:9092";
-
 
 			using (var topicManager = new TopicManager("dotnet-service", "test", servers))
 			{
