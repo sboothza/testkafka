@@ -2,16 +2,16 @@ using System.Data.Common;
 
 namespace DbCommon;
 
-public class Entity
+public abstract class Entity
 {
     public Guid Id { get; set; }
 
-    public Entity()
+    protected Entity()
     {
     }
 
     public virtual void Load(DbDataReader reader)
     {
-        Id = reader.GetGuid("id");
+        Id = reader.GetGuid("id")!.Value;
     }
 }

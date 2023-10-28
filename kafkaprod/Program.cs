@@ -1,8 +1,6 @@
-﻿using System;
-
-using Confluent.Kafka;
-
-using kafkacommon;
+﻿using KafkaCommon;
+using KafkaCommon.Implementations;
+using kafkaprod;
 
 namespace Application
 {

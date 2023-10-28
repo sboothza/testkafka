@@ -1,5 +1,5 @@
-using System.Data;
-using kafkacommon;
+using KafkaCommon.Interfaces;
+
 namespace UserModuleCommon;
 
 public class UserRequest : IEnvelope
@@ -11,14 +11,14 @@ public class UserRequest : IEnvelope
 
 public class UserView
 {
-	public Guid Id { get; set; }
-	public string Username { get; set; }
-	public string Name { get; set; }
+	public Guid? Id { get; set; }
+	public string? Username { get; set; }
+	public string? Name { get; set; }
 	public List<Permission> Permissions { get; protected set; } = new();
 
 	public static UserView FromUser(User user)
 	{
-		var userView = new UserView { Id = user.Id, Username = user.Username, Name = user.Name };
+		var userView = new UserView { Id = user.Id, Username = user.Username!, Name = user.Name! };
 		return userView;
 	}
 
@@ -30,7 +30,7 @@ public class UserView
 
 public class UserResponse : IEnvelope
 {
-	public UserView[] Users { get; set; }
+	public UserView[]? Users { get; set; }
 	public Guid CorrelationId { get; set; } 
 	public string Identifier => "UserResponse";
 }
@@ -39,8 +39,8 @@ public class UserAddRequest : IEnvelope
 {
 	public Guid Id { get; set; }
 	public Guid CorrelationId { get; set; } 
-	public string Username { get; set; }
-	public string Name { get; set; }
+	public string? Username { get; set; }
+	public string? Name { get; set; }
 	public List<Permission> Permissions { get; protected set; } = new();
 	public string Identifier => "UserAddRequest";
 }
@@ -49,8 +49,8 @@ public class UserUpdateRequest : IEnvelope
 {
 	public Guid CorrelationId { get; set; } 
 	public Guid Id { get; set; }
-	public string Username { get; set; }
-	public string Name { get; set; }
+	public string? Username { get; set; }
+	public string? Name { get; set; }
 	public List<Permission> Permissions { get; protected set; } = new();
 	public string Identifier => "UserUpdateRequest";
 }
@@ -67,7 +67,7 @@ public class BasicResponse : IEnvelope
 	public Guid CorrelationId { get; set; } 
 	public bool Success { get; set; }
 	public int Code { get; set; }
-	public string Message { get; set; }
+	public string? Message { get; set; }
 	public string Identifier => "BasicResponse";
 
 	public override string ToString()

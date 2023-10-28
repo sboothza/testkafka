@@ -1,63 +1,92 @@
 using System.Data.Common;
 using Microsoft.Extensions.Options;
+
 namespace DbCommon;
 
-public class Repository<T> : IRepository<T>, IDisposable where T : Entity, new()
+public abstract class Repository<T> : IRepository<T>, IDisposable where T : Entity, new()
 {
-    protected readonly DbConnection _connection;
-    protected readonly DbProviderFactory _factory;
+    private readonly DbConnection? _connection;
+    protected readonly DbProviderFactory? _factory;
 
-    public Repository(string providerName, string connectionString)
+    protected Repository(string providerName, string connectionString)
     {
         _factory = DbProviderFactories.GetFactory(providerName);
-        _connection = _factory.CreateConnection();
+        if (_factory is null)
+            throw new DbException("Factory not found");
+        _connection = _factory?.CreateConnection();
+        if (_connection is null)
+            throw new DbException("Could not create connection");
         _connection.ConnectionString = connectionString;
-        _connection.Open();
+        try
+        {
+            _connection.Open();
+        }
+        catch (Exception ex)
+        {
+            throw new DbException("Could not open connection", ex);
+        }
     }
-    
-    public Repository(IOptions<DatabaseConfig> options)
+
+    protected Repository(IOptions<DatabaseConfig> options) : this(options.Value.ProviderName!,
+        options.Value.ConnectionString!)
     {
-        _factory = DbProviderFactories.GetFactory(options.Value.ProviderName);
-        _connection = _factory.CreateConnection();
-        _connection.ConnectionString = options.Value.ConnectionString;
-        _connection.Open();
     }
 
     public List<T> GetMultiple(string sql, DbParameter[] parameters)
     {
-        var command = _connection.CreateCommand();
+        var command = _connection?.CreateCommand();
+        if (command is null)
+            throw new DbException("Could not create command");
+
         command.CommandText = sql;
         command.Parameters.Clear();
         command.Parameters.AddRange(parameters);
         var list = new List<T>();
-        using (var reader = command.ExecuteReader())
+        try
         {
-            while (reader.Read())
+            using (var reader = command.ExecuteReader())
             {
-                T item = new T();
-                item.Load(reader);
-                list.Add(item);
+                while (reader.Read())
+                {
+                    var item = new T();
+                    item.Load(reader);
+                    list.Add(item);
+                }
             }
-        }
 
-        return list;
+            return list;
+        }
+        catch (Exception ex)
+        {
+            throw new DbException("Could not execute fetch", ex);
+        }
     }
 
-    public T GetOne(string sql, DbParameter[] parameters)
+    public T? GetOne(string sql, DbParameter[] parameters)
     {
-        var command = _connection.CreateCommand();
+        var command = _connection?.CreateCommand();
+        if (command is null)
+            throw new DbException("Could not create command");
+
         command.CommandText = sql;
         command.Parameters.Clear();
         command.Parameters.AddRange(parameters);
 
-        using (var reader = command.ExecuteReader())
+        try
         {
-            if (reader.Read())
+            using (var reader = command.ExecuteReader())
             {
-                T item = new T();
-                item.Load(reader);
-                return item;
+                if (reader.Read())
+                {
+                    var item = new T();
+                    item.Load(reader);
+                    return item;
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            throw new DbException("Could not execute fetch", ex);
         }
 
         return null;
@@ -65,18 +94,28 @@ public class Repository<T> : IRepository<T>, IDisposable where T : Entity, new()
 
     public void Modify(string sql, DbParameter[] parameters)
     {
-        var command = _connection.CreateCommand();
+        var command = _connection?.CreateCommand();
+        if (command is null)
+            throw new DbException("Could not create command");
+
         command.CommandText = sql;
         command.Parameters.Clear();
         command.Parameters.AddRange(parameters);
-        command.ExecuteNonQuery();
+        try
+        {
+            command.ExecuteNonQuery();
+        }
+        catch (Exception ex)
+        {
+            throw new DbException("Could not execute query", ex);
+        }
     }
 
     protected virtual void Dispose(bool disposing)
     {
         if (disposing)
         {
-            _connection.Dispose();
+            _connection?.Dispose();
         }
     }
 

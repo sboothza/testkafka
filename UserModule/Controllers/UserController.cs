@@ -36,13 +36,13 @@ public class UserController : ControllerBase
     [HttpPost]
     public void Add(User user)
     {
-        _repository.Add(user.Id, user.Username, user.Name);
+        _repository.Add(user.Id, user.Username!, user.Name!);
     }
     
     [HttpPut]
     public void Update(User user)
     {
-        _repository.Update(user.Id, user.Username, user.Name);
+        _repository.Update(user.Id, user.Username!, user.Name!);
     }
 
     [HttpDelete]

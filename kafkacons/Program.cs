@@ -1,8 +1,6 @@
-﻿using System;
-
-using Confluent.Kafka;
-
-using kafkacommon;
+﻿using KafkaCommon;
+using KafkaCommon.Implementations;
+using KafkaCommon.Interfaces;
 
 namespace Application
 {
@@ -11,11 +9,11 @@ namespace Application
 		static void Main(string[] args)
 		{
 			EnvelopeMapper.Scan();
-			using (var subscriber = new Subscriber("test-consumer-group", "test", "localhost:9092", 100))
+			using (ISubscriber subscriber = new Subscriber("test-consumer-group", "test", "localhost:9092"))
 			{
 				subscriber.MessageReceived += (sender, e) =>
 										{
-											Console.WriteLine(e.Message.ToString());
+											Console.WriteLine(e.Message?.ToString());
 										};
 				subscriber.Start();
 
